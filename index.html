@@ -16,19 +16,47 @@
     <nav>
       <h1 class="logo">Happy Shopping</h1>
       <div class="cartBtn">
-        
-        <i class="fa-solid fa-bag-shopping shoppingBag"><span class="totalQty">0</span></i>
+        <i class="fa-solid fa-bag-shopping shoppingBag"
+          ><span class="totalQty">0</span></i
+        >
       </div>
     </nav>
     <main>
-      <div class="container" id="container">
-        
-      </div>
+      <div class="container" id="container"></div>
     </main>
-    <div class="checkoutSection active">
-      
-        <i class="fa-solid fa-xmark btn closeBtn"></i>
-     
+    <div class="checkoutSection">
+      <h1>Cart</h1>
+      <i class="fa-solid fa-xmark btn closeBtn"></i>
+      <ul class="shoppingList" id="shoppingList">
+        <li class="shoppingItem">
+          <img src="./images/Blazer.jpg" />
+          <div class="itemNamePrice">
+            <p class="itemName">Blazer</p>
+            <h4>
+              <i class="fa-solid fa-indian-rupee-sign"></i>
+              <span class="itemPrice">2550</span>
+            </h4>
+          </div>
+          <div class="itemQtyInfo">
+            <button class="minusBtn btn">-</button>
+            <span class="itemQty">2</span>
+            <button class="addBtn btn">+</button>
+          </div>
+          <h4>
+            <i class="fa-solid fa-indian-rupee-sign"></i>
+            <span class="itemTotalPrice">6000</span>
+          </h4>
+          <button class="btn deleteBtn">Delete</button>
+        </li>
+        <div class="summary">
+          <div class="summaryQty">Items : <h3 class="allItemsQty">2</h3></div>
+          <div class="summaryAmount">  
+            <i class="fa-solid fa-indian-rupee-sign"></i>
+            <h3 class="allItemsPrice">6000</h3>
+          </div>
+        </div>
+      </ul>
+      <button class="btn orangeBtn payBtn">Proceed to Pay</button>
     </div>
   </body>
 </html>
