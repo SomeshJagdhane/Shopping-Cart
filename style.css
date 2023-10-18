@@ -6,6 +6,9 @@
     --color-grey-1:#1f1f1f;
     --color-yellow:#fea143;
     --color-red:rgb(255, 42, 42);
+
+    --primary-color-trans:#441556ed;
+    --fade-primary-color-trans:#601d7ad0;
 }
 *{
     margin: 0;
@@ -47,6 +50,9 @@ nav{
     left:0;
     z-index: 8;
 }
+nav.hidden{
+    display: none;
+}
 nav .logo{
     color: var(--color-grey);
 }
@@ -76,6 +82,11 @@ nav .totalQty{
     gap:15px;
     justify-content: space-evenly;
     padding-top:100px;
+}
+.container.blur{
+    filter:blur(5px);
+    overflow: hidden;
+    height: 100vh;
 }
 .product{
     width: 300px;
@@ -129,16 +140,7 @@ nav .totalQty{
 .checkoutSection{
     display: none;
 }
-/* 
-main{
-    position: relative;
-}
-.container{
-    filter:blur(5px);
-}
-nav{
-    display: none;
-} */
+
 .checkoutSection.active{
     
     top:calc(100vh / 2);
@@ -147,9 +149,8 @@ nav{
     height: 95vh;
     transform: translate(-50%,-50%);
     position:fixed;
-    background-color: var(--primary-color);
+    background-color: var(--primary-color-trans);
     z-index: 10;
-    opacity: 0.95;
     border-radius:10px;
     box-shadow: 0 0 25px #000;
     padding: 10px;
@@ -172,18 +173,24 @@ nav{
 }
 .checkoutSection .shoppingList{
     width: 93%;
-    height: 65%;
+    height: fit-content;
     overflow-y: scroll;
-    box-shadow: 0 5px 20px #0000008f;
+    box-shadow: 0 5px 20px #0000006e;
     border-radius: 5px;
     position: relative;
 }
+.shoppingList .emptyCart{
+    font-size: 1.8rem;
+    color: var(--color-grey);
+    padding: 20px;
+}
 .shoppingList li{
+    
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 15px;
-    background-color: var(--fade-primary-color);
+    background-color: var(--fade-primary-color-trans);
     border-bottom: 1px solid var(--color-grey);
     color:var(--color-grey);
 }
@@ -191,13 +198,14 @@ nav{
     border-radius: 5px 5px 0 0;
 }
 .shoppingList li:not(:first-child){
-    margin-top: 5px;
+    /* margin-top: 15px; */
     
 }
 .shoppingItem img{
     width: 70px;
     height: 70px;
     object-position: center;
+    object-fit: cover;
     border-radius: 5px;
 }
 
