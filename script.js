@@ -1,6 +1,6 @@
 class Item {
   constructor(id, name, imgSrc, desc, price) {
-    this.id = `item-${id}`;
+    this.id = id;
     this.name = name;
     this.imgSrc = imgSrc;
     this.desc = desc;
@@ -109,7 +109,7 @@ class Model {
         totalPrice: 0,
       },
     ];
-    this.cart = [];
+    this.cart = JSON.parse(JSON.parse(localStorage.getItem(`cart`)))||[];
 
     this.totalQty = this._calcTotalQty(this.cart);
     this.totalCost = this._calcTotalCost(this.cart);
@@ -117,7 +117,6 @@ class Model {
   addToCart(id, qty) {
     // fetch data from product
     const product = this.productData.find((pro) => pro.id === id);
-
     // Create new item based on product details
     const item = new Item(
       product.id,
@@ -148,6 +147,7 @@ class Model {
     }
     this.totalQty = this._calcTotalQty(this.cart);
     this.totalCost = this._calcTotalCost(this.cart);
+    this._commitChanges();
   }
 
   _calcTotalQty(cart) {
@@ -155,6 +155,10 @@ class Model {
   }
   _calcTotalCost(cart) {
     return cart.reduce((total, item) => total + item.totalPrice, 0);
+  }
+  _commitChanges(){
+    localStorage.setItem(`cart`,JSON.stringify(JSON.stringify(this.cart)));
+    
   }
 }
 
@@ -165,12 +169,7 @@ class View {
     this.checkoutSectionEl = document.querySelector(`.checkoutSection`);
     this.cartEl = document.querySelector(`.shoppingList`);
 
-    // open cart if click on shopping bag
-    this.navEl.addEventListener(`click`, (event) => {
-      const targetEvent = event.target;
-      if (!targetEvent.closest(`.cartBtn`)) return;
-      this.showCart();
-    });
+    
 
     // close cart if click on close btn
     this.checkoutSectionEl.addEventListener(`click`, (event) => {
@@ -212,16 +211,40 @@ class View {
         `;
   }
 
-  bindAddToCart(handler) {
-    // this.cartEl.addEventListener(`click`,event=>{
-    //   const eventTarget = event.target;
-    //   const add = eventTarget.classList.contains(`addBtn`);
-    //   const minus = eventTarget.classList.contains(`minusBtn`);
-    //   if(!add && !minus)return;
-    //   const itemId = eventTarget.closest(`.shoppingItem`).id;
-    //   add?handler(+itemId,1):handler(+itemId,-1);
-    // });
+  showCart() {
 
+    this.checkoutSectionEl.classList.add(`active`);
+    this.navEl.classList.add(`hidden`);
+    this.containerEl.classList.add(`blur`);
+  }
+
+  closeCart() {
+    this.checkoutSectionEl.classList.remove(`active`);
+    this.navEl.classList.remove(`hidden`);
+    this.containerEl.classList.remove(`blur`);
+  }
+  bindShowCart(model){
+    // open cart if click on shopping bag
+    this.navEl.addEventListener(`click`, (event) => {
+      const targetEvent = event.target;
+      if (!targetEvent.closest(`.cartBtn`)) return;
+      this.fillDataIntoCart(model.cart);
+      this.updateSummary(model.totalQty,model.totalCost);
+      this.showCart();
+    });
+  }
+  bindChangeQty(handler){
+    this.cartEl.addEventListener(`click`,event=>{
+      const eventTarget = event.target;
+      const add = eventTarget.classList.contains(`addBtn`);
+      const minus = eventTarget.classList.contains(`minusBtn`);
+      if(!add && !minus)return;
+      const itemId = eventTarget.closest(`.shoppingItem`).dataset.id;
+      add?handler(+itemId,1):handler(+itemId,-1);
+    });
+  }
+  bindAddToCart(handler) {
+    
 
     this.containerEl.addEventListener(`click`, (event) => {
       const targetEl = event.target;
@@ -233,19 +256,21 @@ class View {
       const productId = targetEl.closest(`.product`).id;
 
       handler(+productId, 1);
+
+      if(targetEl.classList.contains(`buyBtn`))
+        this.showCart();
     });
   }
-
-  showCart() {
-    this.checkoutSectionEl.classList.add(`active`);
-    this.navEl.classList.add(`hidden`);
-    this.containerEl.classList.add(`blur`);
-  }
-
-  closeCart() {
-    this.checkoutSectionEl.classList.remove(`active`);
-    this.navEl.classList.remove(`hidden`);
-    this.containerEl.classList.remove(`blur`);
+  bindDeleteItem(handler){
+    this.cartEl.addEventListener(`click`,event=>{
+      const eventTarget = event.target;
+      if(!eventTarget.classList.contains(`deleteBtn`)) return;
+      const itemEl = eventTarget.closest(`.shoppingItem`);
+      const itemId = itemEl.dataset.id;
+      const qty=+itemEl.querySelector(`.itemQty`).textContent;
+      console.log(-qty);
+      handler(+itemId,-qty);
+    });
   }
   updateTotalQty(totalQty) {
     const totalQtyEl = document.querySelector(`.totalQty`);
@@ -255,12 +280,18 @@ class View {
       totalQtyEl.innerText = totalQty;
     }
   }
+  
+  fillDataIntoCart(data) {
+    this.cartEl.innerHTML = ``;
+    if(data.length===0){
+      const msgHtml = `<p class="emptyCart">Shopping Cart is Empty</p>`;
+      this.cartEl.insertAdjacentHTML(`beforeend`,msgHtml);
+      return;
+    }
 
-  fillDataIntoCart(data){
-    this.cartEl.innerHTML=``;
-    data.forEach(function(itemData){
+    data.forEach(function (itemData) {
       const itemHtml = `
-      <li class="shoppingItem" id="${itemData.id}">
+      <li class="shoppingItem" data-id="${itemData.id}">
       <img src="${itemData.imgSrc}" />
       <div class="itemNamePrice">
         <p class="itemName">${itemData.name}</p>
@@ -282,12 +313,17 @@ class View {
     </li>
       `;
       const cartEl = document.querySelector(`.shoppingList`);
-      cartEl.insertAdjacentHTML(`beforeend`,itemHtml);
+      cartEl.insertAdjacentHTML(`beforeend`, itemHtml);
     });
-   
   }
 
-  updateSummary(totalQty, totalCost){
+  updateSummary(totalQty, totalCost) {
+    const payBtn = document.querySelector(`.payBtn`);
+    if(totalQty === 0) {
+      // hide pay btn
+      payBtn.classList.add(`hidden`);
+      return;
+    };
     const summaryHtml = `
     <div class="summary">
     <div class="summaryQty">Items : <h3 class="allItemsQty">${totalQty}</h3></div>
@@ -295,9 +331,10 @@ class View {
       <i class="fa-solid fa-indian-rupee-sign"></i>
       <h3 class="allItemsPrice">${totalCost}</h3>
     </div>
-  </div>
-    `;
-    this.cartEl.insertAdjacentHTML(`beforeend`,summaryHtml);
+  </div>`;
+    this.cartEl.insertAdjacentHTML(`beforeend`, summaryHtml);
+    // show pay btn
+    payBtn.classList.remove(`hidden`);
   }
 }
 
@@ -308,15 +345,18 @@ class Controller {
 
     this.view.renderProducts(this.model.productData);
     this.view.bindAddToCart(this.handleAddToCart.bind(this));
+    this.view.bindChangeQty(this.handleAddToCart.bind(this));
+    this.view.bindDeleteItem(this.handleAddToCart.bind(this));
+
     this.view.updateTotalQty(this.model.totalQty);
+    this.view.bindShowCart(this.model);
   }
   handleAddToCart(id, qty) {
     this.model.addToCart(id, qty);
     this.view.updateTotalQty(this.model.totalQty);
     this.view.fillDataIntoCart(this.model.cart);
-    this.view.updateSummary(this.model.totalQty,this.model.totalCost);
+    this.view.updateSummary(this.model.totalQty, this.model.totalCost);
   }
-
 }
 
 const app = new Controller(new Model(), new View());
